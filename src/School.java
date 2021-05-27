@@ -7,6 +7,8 @@ public class School {
     private String name;
     private List<Student> students;
     private Map<Student, Integer> preferences;
+    private int actualPreference = 1;
+    private int capacity = 1;
 
     public School(String name) {
         this.name = name;
@@ -32,5 +34,24 @@ public class School {
 
     public void addPreference(Student student, int preference) {
         preferences.put(student, preference);
+    }
+
+    public int getActualPreference() {
+        return actualPreference;
+    }
+
+    public void increaseActualPreference() {
+        actualPreference++;
+    }
+
+    public School getSchool(String name) {
+        if (name.equals(this.name)) {
+            return this;
+        }
+        return null;
+    }
+
+    public int getCapacity() {
+        return capacity;
     }
 }

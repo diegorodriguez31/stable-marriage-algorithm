@@ -5,6 +5,7 @@ public class Student {
     private String name;
     private School school;
     private Map<School, Integer> preferences;
+    private int actualPreference = 1;
 
     public Student(String name) {
         this.name = name;
@@ -24,5 +25,13 @@ public class Student {
 
     public void addPreference(School school, int preference) {
         preferences.put(school, preference);
+    }
+
+    public int getActualPreference() {
+        return actualPreference;
+    }
+
+    public void increaseActualPreference() {
+        actualPreference++;
     }
 }

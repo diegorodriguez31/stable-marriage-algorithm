@@ -4,17 +4,21 @@ import java.util.Map;
 public class StableMarriage {
 
     static String filePath;
+    static int nbRounds = 0;
 
     public static void main(String[] args) {
         //filePath = "/home/n7student/Bureau/Theorie_des_Graphes_Thomas_NADAL-Diego_RODRIGEZ/src/preferencesFile1.csv";
-     //   displayFile();
-/*System.out.println("\n\nWho does the bidding ?");
-        System.out.println("1 : Schools");
-        System.out.println("2 : Students");
+        //   displayFile();
+        /*System.out.println("\n\nWho does the bidding ?");
+        System.out.println("1 : Students");
+        System.out.println("2 : Schools");
         Scanner userScanner = new Scanner(System.in);
-        boolean schoolsBidding = userScanner.nextInt() == 1;
+        boolean studentsAreBidding = userScanner.nextInt() == 1;
+
+
         buildMatrix(schoolsBidding);*/
 
+        boolean studentsAreBidding = true;
 
         // Create pairs
         Pair pair1 = new Pair(1, 2);
@@ -28,7 +32,8 @@ public class StableMarriage {
         Pair pair9 = new Pair(1, 3);
 
         // Create the matrix with schools and students
-        Object[][] choicesMatrix = {{" ", "ENSEEIHT", "INSA", "POLYTECH"},{"Diego", pair1, pair2, pair3},
+        Object[][] choicesMatrix = {{" ", "ENSEEIHT", "INSA", "POLYTECH"}
+                ,{"Diego", pair1, pair2, pair3},
                 {"Killian", pair4, pair5, pair6},
                 {"Thomas", pair7, pair8, pair9}};
 
@@ -39,16 +44,52 @@ public class StableMarriage {
 
         parsePreferencesPairs(schools, students, preferencesPairs);
 
-        putBidderIntoSchoolList(students);
 
-        selectTheChosenOnes(schools);
+        studentsBiddingSchools(students);
+        displayResult(schools);
+
+        /*if (studentsAreBidding) {
+            applyStudentBidding(students, schools);
+        } else {
+            applySchoolBidding(students, schools);
+        }*/
     }
 
-    // According to the max capacity, chose the students who can stay in the school at least for this turn
-    private static void selectTheChosenOnes(School[] schools) {
+    private static boolean marriageIsStable(School[] schools){
+        for (School school : schools) {
+            if (!school.checkCapacity()) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private static void applyStudentBidding(Student[] students, School[] schools) {
+        studentsBiddingSchools(students);
+        nbRounds = 1;
+        while (!marriageIsStable(schools)) {
+            selectTheWantedSudents(schools);
+            studentsBiddingSchools(students);
+            nbRounds++;
+        }
+        displayResult(students);
+    }
+
+    private static void applySchoolBidding(Student[] students, School[] schools) {
+        schoolsBiddingStudents(students);
+        nbRounds = 1;
+        while (!marriageIsStable(schools)) {
+            selectTheWantedSchool(schools);
+            schoolsBiddingStudents(students);
+            nbRounds++;
+        }
+        displayResult(schools);
+    }
+
+    private static void selectTheWantedSudents(School[] schools) {
         for (int i = 0; i < schools.length; i++) {
             List<Student> studentsList = schools[i].getStudents();
-            if (studentsList.size() > schools[i].getCapacity()) {
+            if (!schools[i].checkCapacity()) {
                 Student chosenOne = studentsList.get(0);
                 for (Student student :
                         studentsList) {
@@ -60,8 +101,7 @@ public class StableMarriage {
         }
     }
 
-    // The bidder who does the bidding is put into the school list
-    private static void putBidderIntoSchoolList(Student[] students) {
+    private static void studentsBiddingSchools(Student[] students) {
         for (int i = 0; i < students.length; i++) {
             Map<School, Integer> preferences = students[i].getPreferences();
             for (Map.Entry<School, Integer> mapEntry : preferences.entrySet()) {
@@ -72,10 +112,35 @@ public class StableMarriage {
         }
     }
 
+    private static void selectTheWantedSchool(School[] schools) {
+
+    }
+
+    private static void schoolsBiddingStudents(Student[] students) {
+
+    }
+
+    private static void displayResult(School[] schools) {
+        System.out.println("Number of Rounds : " + nbRounds + "\n");
+        for (School school : schools) {
+            System.out.print("\n" + school.getName() + " : ");
+            school.getStudents().forEach(student -> System.out.print(student.getName() + ", "));
+            System.out.print("\n--------------------------------------");
+        }
+    }
+
+    private static void displayResult(Student[] students) {
+        System.out.println("Number of Rounds : " + nbRounds + "\n");
+        for (Student student : students) {
+            System.out.print("\n" + student.getName() + " : " + student.getSchool());
+            System.out.print("\n--------------------------------------");
+        }
+    }
+
     // Parse the raw pair matrix and associate the schools and students preferences
     private static void parsePreferencesPairs(School[] schools, Student[] students, Pair[][] preferencesPairs) {
         for (int i = 0; i < preferencesPairs.length; i++) {
-            for (int j = 0; j < preferencesPairs.length; j++) {
+            for (int j = 0; j < preferencesPairs[0].length; j++) {
                 students[i].addPreference(schools[j], preferencesPairs[i][j].getFirst());
                 schools[j].addPreference(students[i], preferencesPairs[i][j].getSecond());
             }
@@ -84,7 +149,7 @@ public class StableMarriage {
 
     // Build schools based on the school names
     private static School[] getSchools(Object[][] choicesMatrix) {
-        School[] schools = new School[choicesMatrix.length - 1];
+        School[] schools = new School[choicesMatrix[0].length - 1];
         String[] schoolsName = retrieveSchoolsNames(choicesMatrix);
         for (int i = 1; i < schoolsName.length; i++) {
             School school = new School(schoolsName[i]);
@@ -115,7 +180,7 @@ public class StableMarriage {
 
     // Retrieve the students names from the matrix
     public static String[] retrieveStudentsNames(Object[][] matrix) {
-        String[] column = new String[matrix[0].length];
+        String[] column = new String[matrix.length];
         for (int i = 0; i < column.length; i ++) {
             column[i] = matrix[i][0].toString();
         }
@@ -124,9 +189,9 @@ public class StableMarriage {
 
     // Extract a Pair array without the school and students names
     public static Pair[][] extractRawData(Object[][] matrix) {
-        Pair[][] arrayWithoutTitles = new Pair[matrix.length-1][matrix.length-1];
+        Pair[][] arrayWithoutTitles = new Pair[matrix.length-1][matrix[0].length-1];
         for (int i = 1; i < matrix.length; i ++) {
-            for (int j = 1; j < matrix.length; j++) {
+            for (int j = 1; j < matrix[0].length; j++) {
                 arrayWithoutTitles[i-1][j-1] = (Pair) matrix[i][j];
             }
         }

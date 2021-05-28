@@ -54,4 +54,12 @@ public class School {
     public int getCapacity() {
         return capacity;
     }
+
+    public boolean checkCapacity(){
+        return getStudents().size() <= getCapacity();
+    }
+
+    public String getName() {
+        return name;
+    }
 }

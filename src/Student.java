@@ -34,4 +34,12 @@ public class Student {
     public void increaseActualPreference() {
         actualPreference++;
     }
+
+    public String getName() {
+        return name;
+    }
+
+    public School getSchool() {
+        return school;
+    }
 }

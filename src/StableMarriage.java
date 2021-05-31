@@ -7,33 +7,27 @@ public class StableMarriage {
 
     public static void main(String[] args) {
         //filePath = "/home/n7student/Bureau/Theorie_des_Graphes_Thomas_NADAL-Diego_RODRIGEZ/src/preferencesFile1.csv";
-        //   displayFile();
-        /*System.out.println("\n\nWho does the bidding ?");
+        //displayFile();
+
+        System.out.println("\n\nWho does the bidding ?");
         System.out.println("1 : Students");
         System.out.println("2 : Schools");
-
         Scanner userScanner = new Scanner(System.in);
         boolean studentsAreBidding = userScanner.nextInt() == 1;
 
-        buildMatrix(schoolsBidding);*/
-
-
-
-        boolean studentsAreBidding = false;
-
-        /*// Create pairs
-        Pair pair1 = new Pair(1, 1);
+        // Create pairs
+        Pair pair1 = new Pair(1, 2);
         Pair pair2 = new Pair(2, 3);
-        Pair pair3 = new Pair(3, 3);
+        Pair pair3 = new Pair(3, 1);
         Pair pair4 = new Pair(4, 1);
-        Pair pair5 = new Pair(1, 2);
-        Pair pair6 = new Pair(3, 1);
-        Pair pair7 = new Pair(2, 1);
-        Pair pair8 = new Pair(4, 2);
-        Pair pair9 = new Pair(2, 3);
-        Pair pair10 = new Pair(3, 2);
-        Pair pair11 = new Pair(1, 2);
-        Pair pair12 = new Pair(4, 3);
+        Pair pair5 = new Pair(2, 1);
+        Pair pair6 = new Pair(4, 1);
+        Pair pair7 = new Pair(1, 2);
+        Pair pair8 = new Pair(3, 2);
+        Pair pair9 = new Pair(3, 3);
+        Pair pair10 = new Pair(2, 2);
+        Pair pair11 = new Pair(4, 3);
+        Pair pair12 = new Pair(1, 3);
 
 
 
@@ -41,9 +35,9 @@ public class StableMarriage {
         Object[][] choicesMatrix = {{" ", "ENSEEIHT", "INSA", "POLYTECH", "Ecole"}
                 ,{"Diego", pair1, pair2, pair3, pair4},
                 {"Killian", pair5, pair6, pair7, pair8},
-                {"Thomas", pair9, pair10, pair11, pair12}};*/
+                {"Thomas", pair9, pair10, pair11, pair12}};
 
-        // Create pairs
+       /* // Create pairs
         Pair pair1 = new Pair(1, 2);
         Pair pair2 = new Pair(2, 3);
         Pair pair3 = new Pair(3, 1);
@@ -58,7 +52,7 @@ public class StableMarriage {
         Object[][] choicesMatrix = {{" ", "ENSEEIHT", "INSA", "POLYTECH"}
                 ,{"Diego", pair1, pair2, pair3},
                 {"Killian", pair4, pair5, pair6},
-                {"Thomas", pair7, pair8, pair9}};
+                {"Thomas", pair7, pair8, pair9}};*/
 
         School[] schools = getSchools(choicesMatrix);
         Student[] students = getStudents(choicesMatrix);
@@ -112,7 +106,6 @@ public class StableMarriage {
     private static void applySchoolBidding(Student[] students, School[] schools) {
         schoolsBiddingStudents(schools);
         nbRounds = 1;
-        boolean a = !marriageIsStable(schools);
         while (!marriageIsStable(students)) {
             List<School> schoolsRemaining = selectTheWantedSchool(students);
             School[] remainingSchools = new School[schools.length];
@@ -226,6 +219,7 @@ public class StableMarriage {
                         school.increaseActualPreference();
                         remainingSchools.add(school);
                         students[i].getInterestedSchools().remove(school);
+                        school.removeStudent(students[i]);
                     }
                 }
             }

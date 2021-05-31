@@ -4,6 +4,10 @@ public class StableMarriage {
 
     static String filePath;
     static int nbRounds = 0;
+    static Student[] remainingStudents;
+    static School[] remainingSchools;
+    static int remainingStudentsCurrentSize;
+    static int remainingS
 
     public static void main(String[] args) {
         //filePath = "/home/n7student/Bureau/Theorie_des_Graphes_Thomas_NADAL-Diego_RODRIGEZ/src/preferencesFile1.csv";
@@ -38,20 +42,17 @@ public class StableMarriage {
                 {"Killian", pair4, pair5, pair6},
                 {"Thomas", pair7, pair8, pair9}};
 
-        School[] schools = getSchools(choicesMatrix);
-        Student[] students = getStudents(choicesMatrix);
+        remainingSchools = getSchools(choicesMatrix);
+        remainingStudents = getStudents(choicesMatrix);
 
         Pair[][] preferencesPairs = extractRawData(choicesMatrix);
 
-        parsePreferencesPairs(schools, students, preferencesPairs);
-
-        studentsBiddingSchools(students);
-        displayResult(schools);
+        parsePreferencesPairs(remainingSchools, remainingStudents, preferencesPairs);
 
         if (studentsAreBidding) {
-            applyStudentBidding(students, schools);
+            applyStudentBidding(remainingStudents, remainingSchools);
         } else {
-            applySchoolBidding(students, schools);
+            applySchoolBidding(remainingStudents, remainingSchools);
         }
     }
 
@@ -101,7 +102,7 @@ public class StableMarriage {
         }
     }*/
     // According to the max capacity, chose the students who can stay in the school at least for this turn
-    private static void selectTheWantedSudents(School[] schools) {
+    private static Student[] selectTheWantedSudents(School[] schools) {
         for (int i = 0; i < schools.length; i++) {
             List<Student> studentsList = schools[i].getStudents();
             if (studentsList.size() > schools[i].getCapacity()) {
@@ -122,16 +123,20 @@ public class StableMarriage {
                         }
                     }
                 }
+
                 int actualCapacity = 1;
                 for (Student student : tmpList) {
                     if (actualCapacity <= schools[i].getCapacity()) {
                         actualCapacity++;
                     } else {
+                        student.increaseActualPreference();
+                        // ajouter student au tableau
                         schools[i].removeStudent(student);
                     }
                 }
             }
         }
+        return remainingStudents;
     }
 
     public static <K, V extends Comparable<? super V>> Map<K, V> sortByValue(Map<K, V> map) {
@@ -152,6 +157,7 @@ public class StableMarriage {
             for (Map.Entry<School, Integer> mapEntry : preferences.entrySet()) {
                 if (mapEntry.getValue().equals(students[i].getActualPreference())) {
                     mapEntry.getKey().addStudent(students[i]);
+
                     break;
                 }
             }

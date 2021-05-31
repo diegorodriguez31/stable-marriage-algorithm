@@ -4,10 +4,6 @@ public class StableMarriage {
 
     static String filePath;
     static int nbRounds = 0;
-    static Student[] remainingStudents;
-    static School[] remainingSchools;
-    static int remainingStudentsCurrentSize;
-    static int remainingS
 
     public static void main(String[] args) {
         //filePath = "/home/n7student/Bureau/Theorie_des_Graphes_Thomas_NADAL-Diego_RODRIGEZ/src/preferencesFile1.csv";
@@ -42,17 +38,17 @@ public class StableMarriage {
                 {"Killian", pair4, pair5, pair6},
                 {"Thomas", pair7, pair8, pair9}};
 
-        remainingSchools = getSchools(choicesMatrix);
-        remainingStudents = getStudents(choicesMatrix);
+        School[] schools = getSchools(choicesMatrix);
+        Student[] students = getStudents(choicesMatrix);
 
         Pair[][] preferencesPairs = extractRawData(choicesMatrix);
 
-        parsePreferencesPairs(remainingSchools, remainingStudents, preferencesPairs);
+        parsePreferencesPairs(schools, students, preferencesPairs);
 
         if (studentsAreBidding) {
-            applyStudentBidding(remainingStudents, remainingSchools);
+            applyStudentBidding(students, schools);
         } else {
-            applySchoolBidding(remainingStudents, remainingSchools);
+            applySchoolBidding(students, schools);
         }
     }
 
@@ -69,8 +65,14 @@ public class StableMarriage {
         studentsBiddingSchools(students);
         nbRounds = 1;
         while (!marriageIsStable(schools)) {
-            selectTheWantedSudents(schools);
-            studentsBiddingSchools(students);
+            List<Student> studentsRemaining = selectTheWantedSudents(schools);
+            Student[] remainingStudents = new Student[students.length];
+            int j = 0;
+            for (Student student : studentsRemaining) {
+                remainingStudents[j] = student;
+                j++;
+            }
+            studentsBiddingSchools(remainingStudents);
             nbRounds++;
         }
         displayResult(students);
@@ -102,7 +104,8 @@ public class StableMarriage {
         }
     }*/
     // According to the max capacity, chose the students who can stay in the school at least for this turn
-    private static Student[] selectTheWantedSudents(School[] schools) {
+    private static List<Student> selectTheWantedSudents(School[] schools) {
+        List<Student> remainingStudents = new ArrayList<>();
         for (int i = 0; i < schools.length; i++) {
             List<Student> studentsList = schools[i].getStudents();
             if (studentsList.size() > schools[i].getCapacity()) {
@@ -130,7 +133,7 @@ public class StableMarriage {
                         actualCapacity++;
                     } else {
                         student.increaseActualPreference();
-                        // ajouter student au tableau
+                        remainingStudents.add(student);
                         schools[i].removeStudent(student);
                     }
                 }
@@ -153,12 +156,14 @@ public class StableMarriage {
 
     private static void studentsBiddingSchools(Student[] students) {
         for (int i = 0; i < students.length; i++) {
-            Map<School, Integer> preferences = students[i].getPreferences();
-            for (Map.Entry<School, Integer> mapEntry : preferences.entrySet()) {
-                if (mapEntry.getValue().equals(students[i].getActualPreference())) {
-                    mapEntry.getKey().addStudent(students[i]);
-
-                    break;
+            if (students[i] != null) {
+                Map<School, Integer> preferences = students[i].getPreferences();
+                for (Map.Entry<School, Integer> mapEntry : preferences.entrySet()) {
+                    if (mapEntry.getValue().equals(students[i].getActualPreference())) {
+                        mapEntry.getKey().addStudent(students[i]);
+                        students[i].setSchool(mapEntry.getKey());
+                        break;
+                    }
                 }
             }
         }
@@ -184,7 +189,7 @@ public class StableMarriage {
     private static void displayResult(Student[] students) {
         System.out.println("Number of Rounds : " + nbRounds + "\n");
         for (Student student : students) {
-            System.out.print("\n" + student.getName() + " : " + student.getSchool());
+            System.out.print("\n" + student.getName() + " : " + student.getSchool().getName());
             System.out.print("\n--------------------------------------");
         }
     }

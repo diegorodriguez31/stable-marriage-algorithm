@@ -1,3 +1,5 @@
+import java.io.BufferedReader;
+import java.io.FileReader;
 import java.util.*;
 
 public class StableMarriage {
@@ -6,17 +8,7 @@ public class StableMarriage {
     static int nbRounds = 0;
 
     public static void main(String[] args) {
-        //filePath = "/home/n7student/Bureau/Theorie_des_Graphes_Thomas_NADAL-Diego_RODRIGEZ/src/preferencesFile1.csv";
-        //displayFile();
-
-        System.out.println("\n\nWho does the bidding ?");
-        System.out.println("1 : Students");
-        System.out.println("2 : Schools");
-        Scanner userScanner = new Scanner(System.in);
-        boolean studentsAreBidding = userScanner.nextInt() == 1;
-
-        // Create pairs
-        Pair pair1 = new Pair(1, 2);
+        /*// Create pairs
         Pair pair2 = new Pair(2, 3);
         Pair pair3 = new Pair(3, 1);
         Pair pair4 = new Pair(4, 1);
@@ -29,15 +21,13 @@ public class StableMarriage {
         Pair pair11 = new Pair(4, 3);
         Pair pair12 = new Pair(1, 3);
 
-
-
         // Create the matrix with schools and students
         Object[][] choicesMatrix = {{" ", "ENSEEIHT", "INSA", "POLYTECH", "Ecole"}
                 ,{"Diego", pair1, pair2, pair3, pair4},
                 {"Killian", pair5, pair6, pair7, pair8},
                 {"Thomas", pair9, pair10, pair11, pair12}};
 
-       /* // Create pairs
+        // Create pairs
         Pair pair1 = new Pair(1, 2);
         Pair pair2 = new Pair(2, 3);
         Pair pair3 = new Pair(3, 1);
@@ -53,6 +43,22 @@ public class StableMarriage {
                 ,{"Diego", pair1, pair2, pair3},
                 {"Killian", pair4, pair5, pair6},
                 {"Thomas", pair7, pair8, pair9}};*/
+        //filePath = "src/main/resources/preferencesFile1.csv";
+
+        Scanner userScanner = new Scanner(System.in);
+        System.out.println("\nWhich file do you want to use ?");
+        System.out.println("1) 3 students and 3 schools");
+        System.out.println("2) 3 students and 4 schools");
+        int fileUsed = userScanner.nextInt();
+        filePath = "src/main/resources/preferencesFile" + fileUsed + ".csv";
+
+        System.out.println("\nWho does the bidding ?");
+        System.out.println("1) Students");
+        System.out.println("2) Schools");
+        boolean studentsAreBidding = userScanner.nextInt() == 1;
+        System.out.println("\n\n\n");
+
+        Object[][] choicesMatrix = parseCSVFile(filePath);
 
         School[] schools = getSchools(choicesMatrix);
         Student[] students = getStudents(choicesMatrix);
@@ -61,11 +67,70 @@ public class StableMarriage {
 
         parsePreferencesPairs(schools, students, preferencesPairs);
 
-        if (studentsAreBidding) {
+       if (studentsAreBidding) {
             applyStudentBidding(students, schools);
         } else {
             applySchoolBidding(students, schools);
         }
+    }
+
+    private static Object[][] parseCSVFile(String filePath) {
+        Object[][] choicesMatrix = {{}};
+
+        int nbColumns = 0;
+        int nbRows = 0;
+
+        List<List<String>> records = new ArrayList<>();
+        try {
+            BufferedReader br = new BufferedReader(new FileReader(filePath));
+            String line;
+            int i = 0;
+            while ((line = br.readLine()) != null) {
+                if (i == 0) {
+                    String[] values = line.split(";");
+                    records.add(Arrays.asList(values));
+                } else {
+                    String[] values = line.split(";");
+                    records.add(Arrays.asList(values));
+                    nbColumns = values.length;
+                }
+                i++;
+            }
+            nbRows = i;
+
+            choicesMatrix = new Object[nbRows][nbColumns];
+
+            i = 0;
+            BufferedReader br2 = new BufferedReader(new FileReader(filePath));
+            while ((line = br2.readLine()) != null) {
+                if (i == 0) {
+                    String[] values = line.split(";");
+                    records.add(Arrays.asList(values));
+                    choicesMatrix[0] = values;
+                } else {
+                    String[] values = line.split(";");
+                    records.add(Arrays.asList(values));
+                    choicesMatrix[i][0] = values[0];
+                    for (int j = 1; j < nbColumns; j++) {
+                        String[] parts = values[j].split(",");
+                        String part1 = parts[0];
+                        String part2 = parts[1];
+                        Pair pair = new Pair(Integer.parseInt(part1), Integer.parseInt(part2));
+                        choicesMatrix[i][j] = pair;
+                    }
+                }
+                i++;
+            }
+        }catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        /* Object[][] choicesMatrix = {{" ", "ENSEEIHT", "INSA", "POLYTECH", "Ecole"}
+                ,{"Diego", pair1, pair2, pair3, pair4},
+                {"Killian", pair5, pair6, pair7, pair8},
+                {"Thomas", pair9, pair10, pair11, pair12}};*/
+
+        return choicesMatrix;
     }
 
     private static boolean marriageIsStable(School[] schools){
@@ -338,63 +403,10 @@ public class StableMarriage {
     }
 }
 
+
+
 /*
-public static void displayFile() {
-        List<String[]> rowList = new ArrayList<String[]>();
-        try (BufferedReader br = new BufferedReader(new FileReader(filePath))) {
-            String line;
-            while ((line = br.readLine()) != null) {
-                String[] lineItems = line.split(";");
-                rowList.add(lineItems);
 
-            }
-
-            // récupère la première ligne
-            System.out.println("première ligne\n");
-            for (String s : rowList.get(0)) {
-                System.out.println(s);
-            }
-
-            // récupère la taille de la première ligne
-            System.out.println("\ntaille ligne 1\n");
-            System.out.println(rowList.get(0).length);
-
-            // recupère la première colone
-            System.out.println("\ntaille colonne 1\n");
-            System.out.println(lineItems[0]);
-            for (String s : rowList.get(0)) {
-                for (String s : rowList.get(0)) {
-                    System.out.println(s);
-                }
-            }
-
-            // taille colone 1
-            System.out.println("\ntaille colonne 1\n");
-            System.out.println();
-
-        } catch (Exception e) {
-        }
-        String[][] matrix = new String[rowList.size()][];
-        for (int i = 0; i < rowList.size(); i++) {
-            String[] row = rowList.get(i);
-            matrix[i] = row;
-        }
-
-
-
-
-        try {
-            Scanner scanner = new Scanner(new File(filePath));
-            scanner.useDelimiter(";");
-            while (scanner.hasNext())
-            {
-                System.out.print(scanner.next() + "    ");
-            }
-            scanner.close();
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        }
-    }
 
     # Lire le fichier csv incomplet et le mettre dans un tableau
 def lecture_csv():

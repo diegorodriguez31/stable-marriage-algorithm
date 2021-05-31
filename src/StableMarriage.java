@@ -4,10 +4,6 @@ public class StableMarriage {
 
     static String filePath;
     static int nbRounds = 0;
-    static Student[] remainingStudents;
-    static School[] remainingSchools;
-    static int remainingStudentsCurrentSize;
-    static int remainingS
 
     public static void main(String[] args) {
         //filePath = "/home/n7student/Bureau/Theorie_des_Graphes_Thomas_NADAL-Diego_RODRIGEZ/src/preferencesFile1.csv";
@@ -23,7 +19,29 @@ public class StableMarriage {
 
 
 
-        boolean studentsAreBidding = true;
+        boolean studentsAreBidding = false;
+
+        /*// Create pairs
+        Pair pair1 = new Pair(1, 1);
+        Pair pair2 = new Pair(2, 3);
+        Pair pair3 = new Pair(3, 3);
+        Pair pair4 = new Pair(4, 1);
+        Pair pair5 = new Pair(1, 2);
+        Pair pair6 = new Pair(3, 1);
+        Pair pair7 = new Pair(2, 1);
+        Pair pair8 = new Pair(4, 2);
+        Pair pair9 = new Pair(2, 3);
+        Pair pair10 = new Pair(3, 2);
+        Pair pair11 = new Pair(1, 2);
+        Pair pair12 = new Pair(4, 3);
+
+
+
+        // Create the matrix with schools and students
+        Object[][] choicesMatrix = {{" ", "ENSEEIHT", "INSA", "POLYTECH", "Ecole"}
+                ,{"Diego", pair1, pair2, pair3, pair4},
+                {"Killian", pair5, pair6, pair7, pair8},
+                {"Thomas", pair9, pair10, pair11, pair12}};*/
 
         // Create pairs
         Pair pair1 = new Pair(1, 2);
@@ -42,17 +60,17 @@ public class StableMarriage {
                 {"Killian", pair4, pair5, pair6},
                 {"Thomas", pair7, pair8, pair9}};
 
-        remainingSchools = getSchools(choicesMatrix);
-        remainingStudents = getStudents(choicesMatrix);
+        School[] schools = getSchools(choicesMatrix);
+        Student[] students = getStudents(choicesMatrix);
 
         Pair[][] preferencesPairs = extractRawData(choicesMatrix);
 
-        parsePreferencesPairs(remainingSchools, remainingStudents, preferencesPairs);
+        parsePreferencesPairs(schools, students, preferencesPairs);
 
         if (studentsAreBidding) {
-            applyStudentBidding(remainingStudents, remainingSchools);
+            applyStudentBidding(students, schools);
         } else {
-            applySchoolBidding(remainingStudents, remainingSchools);
+            applySchoolBidding(students, schools);
         }
     }
 
@@ -65,44 +83,82 @@ public class StableMarriage {
         return true;
     }
 
+    private static boolean marriageIsStable(Student[] students){
+        for (Student student : students) {
+            if (!student.checkCapacity()) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     private static void applyStudentBidding(Student[] students, School[] schools) {
         studentsBiddingSchools(students);
         nbRounds = 1;
         while (!marriageIsStable(schools)) {
-            selectTheWantedSudents(schools);
-            studentsBiddingSchools(students);
+            List<Student> studentsRemaining = selectTheWantedSudents(schools);
+            Student[] remainingStudents = new Student[students.length];
+            int j = 0;
+            for (Student student : studentsRemaining) {
+                remainingStudents[j] = student;
+                j++;
+            }
+            studentsBiddingSchools(remainingStudents);
             nbRounds++;
         }
         displayResult(students);
     }
 
     private static void applySchoolBidding(Student[] students, School[] schools) {
-        schoolsBiddingStudents(students);
+        schoolsBiddingStudents(schools);
         nbRounds = 1;
-        while (!marriageIsStable(schools)) {
-            selectTheWantedSchool(schools);
-            schoolsBiddingStudents(students);
+        boolean a = !marriageIsStable(schools);
+        while (!marriageIsStable(students)) {
+            List<School> schoolsRemaining = selectTheWantedSchool(students);
+            School[] remainingSchools = new School[schools.length];
+            int j = 0;
+            for (School school : schoolsRemaining) {
+                remainingSchools[j] = school;
+                j++;
+            }
+            schoolsBiddingStudents(remainingSchools);
             nbRounds++;
         }
         displayResult(schools);
     }
 
-    /*private static void selectTheWantedSudents(School[] schools) {
-        for (int i = 0; i < schools.length; i++) {
-            List<Student> studentsList = schools[i].getStudents();
-            if (!schools[i].checkCapacity()) {
-                Student chosenOne = studentsList.get(0);
-                for (Student student :
-                        studentsList) {
-                    if (schools[i].getPreferences().get(student) > schools[i].getPreferences().get(chosenOne)) {
-                        chosenOne = student;
+    private static void studentsBiddingSchools(Student[] students) {
+        for (int i = 0; i < students.length; i++) {
+            if (students[i] != null) {
+                Map<School, Integer> preferences = students[i].getPreferences();
+                for (Map.Entry<School, Integer> mapEntry : preferences.entrySet()) {
+                    if (mapEntry.getValue().equals(students[i].getActualPreference())) {
+                        mapEntry.getKey().addStudent(students[i]);
+                        students[i].setSchool(mapEntry.getKey());
+                        break;
                     }
                 }
             }
         }
-    }*/
-    // According to the max capacity, chose the students who can stay in the school at least for this turn
-    private static Student[] selectTheWantedSudents(School[] schools) {
+    }
+
+    private static void schoolsBiddingStudents(School[] schools) {
+        for (int i = 0; i < schools.length; i++) {
+            if (schools[i] != null) {
+                Map<Student, Integer> preferences = schools[i].getPreferences();
+                for (Map.Entry<Student, Integer> mapEntry : preferences.entrySet()) {
+                    if (mapEntry.getValue().equals(schools[i].getActualPreference())) {
+                        mapEntry.getKey().getInterestedSchools().add(schools[i]);
+                        schools[i].addStudent(mapEntry.getKey());
+                        break;
+                    }
+                }
+            }
+        }
+    }
+
+    private static List<Student> selectTheWantedSudents(School[] schools) {
+        List<Student> remainingStudents = new ArrayList<>();
         for (int i = 0; i < schools.length; i++) {
             List<Student> studentsList = schools[i].getStudents();
             if (studentsList.size() > schools[i].getCapacity()) {
@@ -130,13 +186,51 @@ public class StableMarriage {
                         actualCapacity++;
                     } else {
                         student.increaseActualPreference();
-                        // ajouter student au tableau
+                        remainingStudents.add(student);
                         schools[i].removeStudent(student);
                     }
                 }
             }
         }
         return remainingStudents;
+    }
+
+    private static List<School> selectTheWantedSchool(Student[] students) {
+        List<School> remainingSchools = new ArrayList<>();
+        for (int i = 0; i < students.length; i++) {
+            List<School> schoolsList = students[i].getInterestedSchools();
+            if (schoolsList.size() > 1) {
+                Map<School, Integer> studentPreferences = students[i].getPreferences();
+                List<Integer> preferencesOrder = new ArrayList<>(studentPreferences.values());
+                Collections.sort(preferencesOrder);
+
+                Map<School, Integer> map = sortByValue(studentPreferences);
+
+                List<School> tmpList = new ArrayList<>();
+                // Trier la liste pour meme ordre que la map
+                for (Map.Entry mapEntry : map.entrySet()) {
+                    School tmpSchool = (School) mapEntry.getKey();
+                    for (School school : students[i].getInterestedSchools()) {
+                        if (school.getName().equals(tmpSchool.getName())) {
+                            tmpList.add(school);
+                            break;
+                        }
+                    }
+                }
+
+                int actualCapacity = 1;
+                for (School school : tmpList) {
+                    if (actualCapacity <= 1) {
+                        actualCapacity++;
+                    } else {
+                        school.increaseActualPreference();
+                        remainingSchools.add(school);
+                        students[i].getInterestedSchools().remove(school);
+                    }
+                }
+            }
+        }
+        return remainingSchools;
     }
 
     public static <K, V extends Comparable<? super V>> Map<K, V> sortByValue(Map<K, V> map) {
@@ -151,27 +245,6 @@ public class StableMarriage {
         return result;
     }
 
-    private static void studentsBiddingSchools(Student[] students) {
-        for (int i = 0; i < students.length; i++) {
-            Map<School, Integer> preferences = students[i].getPreferences();
-            for (Map.Entry<School, Integer> mapEntry : preferences.entrySet()) {
-                if (mapEntry.getValue().equals(students[i].getActualPreference())) {
-                    mapEntry.getKey().addStudent(students[i]);
-
-                    break;
-                }
-            }
-        }
-    }
-
-    private static void selectTheWantedSchool(School[] schools) {
-
-    }
-
-    private static void schoolsBiddingStudents(Student[] students) {
-
-    }
-
     private static void displayResult(School[] schools) {
         System.out.println("Number of Rounds : " + nbRounds + "\n");
         for (School school : schools) {
@@ -184,7 +257,7 @@ public class StableMarriage {
     private static void displayResult(Student[] students) {
         System.out.println("Number of Rounds : " + nbRounds + "\n");
         for (Student student : students) {
-            System.out.print("\n" + student.getName() + " : " + student.getSchool());
+            System.out.print("\n" + student.getName() + " : " + student.getSchool().getName());
             System.out.print("\n--------------------------------------");
         }
     }

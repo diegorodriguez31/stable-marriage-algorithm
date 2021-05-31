@@ -1,5 +1,4 @@
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class StableMarriage {
 
@@ -12,11 +11,13 @@ public class StableMarriage {
         /*System.out.println("\n\nWho does the bidding ?");
         System.out.println("1 : Students");
         System.out.println("2 : Schools");
+
         Scanner userScanner = new Scanner(System.in);
         boolean studentsAreBidding = userScanner.nextInt() == 1;
 
-
         buildMatrix(schoolsBidding);*/
+
+
 
         boolean studentsAreBidding = true;
 
@@ -44,15 +45,14 @@ public class StableMarriage {
 
         parsePreferencesPairs(schools, students, preferencesPairs);
 
-
         studentsBiddingSchools(students);
         displayResult(schools);
 
-        /*if (studentsAreBidding) {
+        if (studentsAreBidding) {
             applyStudentBidding(students, schools);
         } else {
             applySchoolBidding(students, schools);
-        }*/
+        }
     }
 
     private static boolean marriageIsStable(School[] schools){
@@ -86,7 +86,7 @@ public class StableMarriage {
         displayResult(schools);
     }
 
-    private static void selectTheWantedSudents(School[] schools) {
+    /*private static void selectTheWantedSudents(School[] schools) {
         for (int i = 0; i < schools.length; i++) {
             List<Student> studentsList = schools[i].getStudents();
             if (!schools[i].checkCapacity()) {
@@ -99,6 +99,51 @@ public class StableMarriage {
                 }
             }
         }
+    }*/
+    // According to the max capacity, chose the students who can stay in the school at least for this turn
+    private static void selectTheWantedSudents(School[] schools) {
+        for (int i = 0; i < schools.length; i++) {
+            List<Student> studentsList = schools[i].getStudents();
+            if (studentsList.size() > schools[i].getCapacity()) {
+                Map<Student, Integer> schoolPreferences = schools[i].getPreferences();
+                List<Integer> preferencesOrder = new ArrayList<>(schoolPreferences.values());
+                Collections.sort(preferencesOrder);
+
+                Map<Student, Integer> map = sortByValue(schoolPreferences);
+
+                List<Student> tmpList = new ArrayList<>();
+                // Trier la liste pour meme ordre que la map
+                for (Map.Entry mapEntry : map.entrySet()) {
+                    Student tmpStudent = (Student) mapEntry.getKey();
+                    for (Student student : schools[i].getStudents()) {
+                        if (student.getName().equals(tmpStudent.getName())) {
+                            tmpList.add(student);
+                            break;
+                        }
+                    }
+                }
+                int actualCapacity = 1;
+                for (Student student : tmpList) {
+                    if (actualCapacity <= schools[i].getCapacity()) {
+                        actualCapacity++;
+                    } else {
+                        schools[i].removeStudent(student);
+                    }
+                }
+            }
+        }
+    }
+
+    public static <K, V extends Comparable<? super V>> Map<K, V> sortByValue(Map<K, V> map) {
+        List<Map.Entry<K, V>> list = new ArrayList<>(map.entrySet());
+        list.sort(Map.Entry.comparingByValue());
+
+        Map<K, V> result = new LinkedHashMap<>();
+        for (Map.Entry<K, V> entry : list) {
+            result.put(entry.getKey(), entry.getValue());
+        }
+
+        return result;
     }
 
     private static void studentsBiddingSchools(Student[] students) {
@@ -107,6 +152,7 @@ public class StableMarriage {
             for (Map.Entry<School, Integer> mapEntry : preferences.entrySet()) {
                 if (mapEntry.getValue().equals(students[i].getActualPreference())) {
                     mapEntry.getKey().addStudent(students[i]);
+                    break;
                 }
             }
         }
@@ -276,6 +322,22 @@ public static void displayFile() {
             e.printStackTrace();
         }
     }
+
+    # Lire le fichier csv incomplet et le mettre dans un tableau
+def lecture_csv():
+    n = 100
+    m = 1000
+
+    fichier = './toy_incomplet.csv'
+    donnees = np.zeros((n, m))
+    i = 0
+    with open(fichier, 'rb') as csvfile:
+        spamreader = csv.reader(csvfile, delimiter=' ', quotechar='|')
+        for row in spamreader:
+            for j in range(m):
+                donnees[i, j] = row[j]
+            i += 1
+    return donnees
 
     public static void buildMatrix(boolean schoolsBidding) {
         try {

@@ -1,9 +1,12 @@
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class Student {
     private String name;
     private School school;
+    private List<School> interestedSchools;
     private Map<School, Integer> preferences;
     private int actualPreference = 1;
 
@@ -11,6 +14,7 @@ public class Student {
         this.name = name;
         this.school = null;
         this.preferences = new HashMap<>();
+        this.interestedSchools = new ArrayList<>();
     }
 
     public void addSchool(School school){
@@ -45,5 +49,13 @@ public class Student {
 
     public void setSchool(School school) {
         this.school = school;
+    }
+
+    public List<School> getInterestedSchools() {
+        return interestedSchools;
+    }
+
+    public boolean checkCapacity() {
+        return getInterestedSchools().size() <= 1;
     }
 }

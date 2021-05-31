@@ -19,9 +19,9 @@ public class StableMarriage {
 
 
 
-        boolean studentsAreBidding = true;
+        boolean studentsAreBidding = false;
 
-        // Create pairs
+        /*// Create pairs
         Pair pair1 = new Pair(1, 1);
         Pair pair2 = new Pair(2, 3);
         Pair pair3 = new Pair(3, 3);
@@ -41,7 +41,24 @@ public class StableMarriage {
         Object[][] choicesMatrix = {{" ", "ENSEEIHT", "INSA", "POLYTECH", "Ecole"}
                 ,{"Diego", pair1, pair2, pair3, pair4},
                 {"Killian", pair5, pair6, pair7, pair8},
-                {"Thomas", pair9, pair10, pair11, pair12}};
+                {"Thomas", pair9, pair10, pair11, pair12}};*/
+
+        // Create pairs
+        Pair pair1 = new Pair(1, 2);
+        Pair pair2 = new Pair(2, 3);
+        Pair pair3 = new Pair(3, 1);
+        Pair pair4 = new Pair(2, 1);
+        Pair pair5 = new Pair(3, 1);
+        Pair pair6 = new Pair(1, 2);
+        Pair pair7 = new Pair(3, 3);
+        Pair pair8 = new Pair(2, 2);
+        Pair pair9 = new Pair(1, 3);
+
+        // Create the matrix with schools and students
+        Object[][] choicesMatrix = {{" ", "ENSEEIHT", "INSA", "POLYTECH"}
+                ,{"Diego", pair1, pair2, pair3},
+                {"Killian", pair4, pair5, pair6},
+                {"Thomas", pair7, pair8, pair9}};
 
         School[] schools = getSchools(choicesMatrix);
         Student[] students = getStudents(choicesMatrix);
@@ -66,6 +83,15 @@ public class StableMarriage {
         return true;
     }
 
+    private static boolean marriageIsStable(Student[] students){
+        for (Student student : students) {
+            if (!student.checkCapacity()) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     private static void applyStudentBidding(Student[] students, School[] schools) {
         studentsBiddingSchools(students);
         nbRounds = 1;
@@ -84,14 +110,51 @@ public class StableMarriage {
     }
 
     private static void applySchoolBidding(Student[] students, School[] schools) {
-        schoolsBiddingStudents(students);
+        schoolsBiddingStudents(schools);
         nbRounds = 1;
-        while (!marriageIsStable(schools)) {
-            selectTheWantedSchool(schools);
-            schoolsBiddingStudents(students);
+        boolean a = !marriageIsStable(schools);
+        while (!marriageIsStable(students)) {
+            List<School> schoolsRemaining = selectTheWantedSchool(students);
+            School[] remainingSchools = new School[schools.length];
+            int j = 0;
+            for (School school : schoolsRemaining) {
+                remainingSchools[j] = school;
+                j++;
+            }
+            schoolsBiddingStudents(remainingSchools);
             nbRounds++;
         }
         displayResult(schools);
+    }
+
+    private static void studentsBiddingSchools(Student[] students) {
+        for (int i = 0; i < students.length; i++) {
+            if (students[i] != null) {
+                Map<School, Integer> preferences = students[i].getPreferences();
+                for (Map.Entry<School, Integer> mapEntry : preferences.entrySet()) {
+                    if (mapEntry.getValue().equals(students[i].getActualPreference())) {
+                        mapEntry.getKey().addStudent(students[i]);
+                        students[i].setSchool(mapEntry.getKey());
+                        break;
+                    }
+                }
+            }
+        }
+    }
+
+    private static void schoolsBiddingStudents(School[] schools) {
+        for (int i = 0; i < schools.length; i++) {
+            if (schools[i] != null) {
+                Map<Student, Integer> preferences = schools[i].getPreferences();
+                for (Map.Entry<Student, Integer> mapEntry : preferences.entrySet()) {
+                    if (mapEntry.getValue().equals(schools[i].getActualPreference())) {
+                        mapEntry.getKey().getInterestedSchools().add(schools[i]);
+                        schools[i].addStudent(mapEntry.getKey());
+                        break;
+                    }
+                }
+            }
+        }
     }
 
     private static List<Student> selectTheWantedSudents(School[] schools) {
@@ -132,6 +195,44 @@ public class StableMarriage {
         return remainingStudents;
     }
 
+    private static List<School> selectTheWantedSchool(Student[] students) {
+        List<School> remainingSchools = new ArrayList<>();
+        for (int i = 0; i < students.length; i++) {
+            List<School> schoolsList = students[i].getInterestedSchools();
+            if (schoolsList.size() > 1) {
+                Map<School, Integer> studentPreferences = students[i].getPreferences();
+                List<Integer> preferencesOrder = new ArrayList<>(studentPreferences.values());
+                Collections.sort(preferencesOrder);
+
+                Map<School, Integer> map = sortByValue(studentPreferences);
+
+                List<School> tmpList = new ArrayList<>();
+                // Trier la liste pour meme ordre que la map
+                for (Map.Entry mapEntry : map.entrySet()) {
+                    School tmpSchool = (School) mapEntry.getKey();
+                    for (School school : students[i].getInterestedSchools()) {
+                        if (school.getName().equals(tmpSchool.getName())) {
+                            tmpList.add(school);
+                            break;
+                        }
+                    }
+                }
+
+                int actualCapacity = 1;
+                for (School school : tmpList) {
+                    if (actualCapacity <= 1) {
+                        actualCapacity++;
+                    } else {
+                        school.increaseActualPreference();
+                        remainingSchools.add(school);
+                        students[i].getInterestedSchools().remove(school);
+                    }
+                }
+            }
+        }
+        return remainingSchools;
+    }
+
     public static <K, V extends Comparable<? super V>> Map<K, V> sortByValue(Map<K, V> map) {
         List<Map.Entry<K, V>> list = new ArrayList<>(map.entrySet());
         list.sort(Map.Entry.comparingByValue());
@@ -142,29 +243,6 @@ public class StableMarriage {
         }
 
         return result;
-    }
-
-    private static void studentsBiddingSchools(Student[] students) {
-        for (int i = 0; i < students.length; i++) {
-            if (students[i] != null) {
-                Map<School, Integer> preferences = students[i].getPreferences();
-                for (Map.Entry<School, Integer> mapEntry : preferences.entrySet()) {
-                    if (mapEntry.getValue().equals(students[i].getActualPreference())) {
-                        mapEntry.getKey().addStudent(students[i]);
-                        students[i].setSchool(mapEntry.getKey());
-                        break;
-                    }
-                }
-            }
-        }
-    }
-
-    private static void selectTheWantedSchool(School[] schools) {
-
-    }
-
-    private static void schoolsBiddingStudents(Student[] students) {
-
     }
 
     private static void displayResult(School[] schools) {

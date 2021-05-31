@@ -22,21 +22,26 @@ public class StableMarriage {
         boolean studentsAreBidding = true;
 
         // Create pairs
-        Pair pair1 = new Pair(1, 2);
+        Pair pair1 = new Pair(1, 1);
         Pair pair2 = new Pair(2, 3);
-        Pair pair3 = new Pair(3, 1);
-        Pair pair4 = new Pair(2, 1);
-        Pair pair5 = new Pair(3, 1);
-        Pair pair6 = new Pair(1, 2);
-        Pair pair7 = new Pair(3, 3);
-        Pair pair8 = new Pair(2, 2);
-        Pair pair9 = new Pair(1, 3);
+        Pair pair3 = new Pair(3, 3);
+        Pair pair4 = new Pair(4, 1);
+        Pair pair5 = new Pair(1, 2);
+        Pair pair6 = new Pair(3, 1);
+        Pair pair7 = new Pair(2, 1);
+        Pair pair8 = new Pair(4, 2);
+        Pair pair9 = new Pair(2, 3);
+        Pair pair10 = new Pair(3, 2);
+        Pair pair11 = new Pair(1, 2);
+        Pair pair12 = new Pair(4, 3);
+
+
 
         // Create the matrix with schools and students
-        Object[][] choicesMatrix = {{" ", "ENSEEIHT", "INSA", "POLYTECH"}
-                ,{"Diego", pair1, pair2, pair3},
-                {"Killian", pair4, pair5, pair6},
-                {"Thomas", pair7, pair8, pair9}};
+        Object[][] choicesMatrix = {{" ", "ENSEEIHT", "INSA", "POLYTECH", "Ecole"}
+                ,{"Diego", pair1, pair2, pair3, pair4},
+                {"Killian", pair5, pair6, pair7, pair8},
+                {"Thomas", pair9, pair10, pair11, pair12}};
 
         School[] schools = getSchools(choicesMatrix);
         Student[] students = getStudents(choicesMatrix);
@@ -89,21 +94,6 @@ public class StableMarriage {
         displayResult(schools);
     }
 
-    /*private static void selectTheWantedSudents(School[] schools) {
-        for (int i = 0; i < schools.length; i++) {
-            List<Student> studentsList = schools[i].getStudents();
-            if (!schools[i].checkCapacity()) {
-                Student chosenOne = studentsList.get(0);
-                for (Student student :
-                        studentsList) {
-                    if (schools[i].getPreferences().get(student) > schools[i].getPreferences().get(chosenOne)) {
-                        chosenOne = student;
-                    }
-                }
-            }
-        }
-    }*/
-    // According to the max capacity, chose the students who can stay in the school at least for this turn
     private static List<Student> selectTheWantedSudents(School[] schools) {
         List<Student> remainingStudents = new ArrayList<>();
         for (int i = 0; i < schools.length; i++) {

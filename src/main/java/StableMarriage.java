@@ -6,49 +6,15 @@ public class StableMarriage {
 
     static String filePath;
     static int nbRounds = 0;
+    static HashMap<String, Integer> schoolsCapacities;
+    static Object[][] schoolsCapacitiesTab;
 
     public static void main(String[] args) {
-        /*// Create pairs
-        Pair pair2 = new Pair(2, 3);
-        Pair pair3 = new Pair(3, 1);
-        Pair pair4 = new Pair(4, 1);
-        Pair pair5 = new Pair(2, 1);
-        Pair pair6 = new Pair(4, 1);
-        Pair pair7 = new Pair(1, 2);
-        Pair pair8 = new Pair(3, 2);
-        Pair pair9 = new Pair(3, 3);
-        Pair pair10 = new Pair(2, 2);
-        Pair pair11 = new Pair(4, 3);
-        Pair pair12 = new Pair(1, 3);
-
-        // Create the matrix with schools and students
-        Object[][] choicesMatrix = {{" ", "ENSEEIHT", "INSA", "POLYTECH", "Ecole"}
-                ,{"Diego", pair1, pair2, pair3, pair4},
-                {"Killian", pair5, pair6, pair7, pair8},
-                {"Thomas", pair9, pair10, pair11, pair12}};
-
-        // Create pairs
-        Pair pair1 = new Pair(1, 2);
-        Pair pair2 = new Pair(2, 3);
-        Pair pair3 = new Pair(3, 1);
-        Pair pair4 = new Pair(2, 1);
-        Pair pair5 = new Pair(3, 1);
-        Pair pair6 = new Pair(1, 2);
-        Pair pair7 = new Pair(3, 3);
-        Pair pair8 = new Pair(2, 2);
-        Pair pair9 = new Pair(1, 3);
-
-        // Create the matrix with schools and students
-        Object[][] choicesMatrix = {{" ", "ENSEEIHT", "INSA", "POLYTECH"}
-                ,{"Diego", pair1, pair2, pair3},
-                {"Killian", pair4, pair5, pair6},
-                {"Thomas", pair7, pair8, pair9}};*/
-        //filePath = "src/main/resources/preferencesFile1.csv";
-
         Scanner userScanner = new Scanner(System.in);
         System.out.println("\nWhich file do you want to use ?");
         System.out.println("1) 3 students and 3 schools");
         System.out.println("2) 3 students and 4 schools");
+        System.out.println("3) 16 students and 3 schools");
         int fileUsed = userScanner.nextInt();
         filePath = "src/main/resources/preferencesFile" + fileUsed + ".csv";
 
@@ -58,6 +24,7 @@ public class StableMarriage {
         boolean studentsAreBidding = userScanner.nextInt() == 1;
         System.out.println("\n\n\n");
 
+        schoolsCapacities = new HashMap<>();
         Object[][] choicesMatrix = parseCSVFile(filePath);
 
         School[] schools = getSchools(choicesMatrix);
@@ -107,6 +74,25 @@ public class StableMarriage {
                     String[] values = line.split(";");
                     records.add(Arrays.asList(values));
                     choicesMatrix[0] = values;
+
+                    List<String> a = new ArrayList<>();
+                    for (int k = 1; k < values.length; k = k + 2) {
+                        a.add(values[k]);
+                    }
+
+                    schoolsCapacitiesTab = new Object[(values.length-1)/2][2];
+                    for (int k = 0; k < a.size(); k++) {
+                        schoolsCapacitiesTab[k][0] = a.get(k);
+                    }
+
+                    for (int k = 1; k < values.length; k = k + 2) {
+                        schoolsCapacities.put(values[k], Integer.valueOf(values[k+1]));
+                    }
+
+                    for (int k = 0; k < schoolsCapacitiesTab.length; k++) {
+                        schoolsCapacitiesTab[k][1] = Integer.valueOf(schoolsCapacities.get(schoolsCapacitiesTab[k][0]));
+                    }
+
                 } else {
                     String[] values = line.split(";");
                     records.add(Arrays.asList(values));
@@ -124,11 +110,6 @@ public class StableMarriage {
         }catch (Exception e) {
             e.printStackTrace();
         }
-
-        /* Object[][] choicesMatrix = {{" ", "ENSEEIHT", "INSA", "POLYTECH", "Ecole"}
-                ,{"Diego", pair1, pair2, pair3, pair4},
-                {"Killian", pair5, pair6, pair7, pair8},
-                {"Thomas", pair9, pair10, pair11, pair12}};*/
 
         return choicesMatrix;
     }
@@ -323,21 +304,28 @@ public class StableMarriage {
 
     // Parse the raw pair matrix and associate the schools and students preferences
     private static void parsePreferencesPairs(School[] schools, Student[] students, Pair[][] preferencesPairs) {
-        for (int i = 0; i < preferencesPairs.length; i++) {
-            for (int j = 0; j < preferencesPairs[0].length; j++) {
-                students[i].addPreference(schools[j], preferencesPairs[i][j].getFirst());
-                schools[j].addPreference(students[i], preferencesPairs[i][j].getSecond());
+        for (int i = 0; i < students.length; i++) {
+            for (int j = 0; j < schools.length; j++) {
+                int prefStudent = preferencesPairs[i][j].getFirst();
+                int prefSchool = preferencesPairs[i][j].getSecond();
+                students[i].addPreference(schools[j], prefStudent);
+                schools[j].addPreference(students[i], prefSchool);
             }
         }
     }
 
     // Build schools based on the school names
     private static School[] getSchools(Object[][] choicesMatrix) {
-        School[] schools = new School[choicesMatrix[0].length - 1];
+        /*School[] schools = new School[choicesMatrix[0].length - 1];
         String[] schoolsName = retrieveSchoolsNames(choicesMatrix);
         for (int i = 1; i < schoolsName.length; i++) {
-            School school = new School(schoolsName[i]);
+            School school = new School(schoolsName[i], schoolsCapacities.get(schoolsName[i]));
             schools[i-1] = school;
+        }*/
+        School[] schools = new School[schoolsCapacitiesTab.length];
+        for (int i = 0; i < schoolsCapacitiesTab.length; i++) {
+            School school = new School((String) schoolsCapacitiesTab[i][0], (int) schoolsCapacitiesTab[i][1]);
+            schools[i] = school;
         }
         return schools;
     }
@@ -375,7 +363,7 @@ public class StableMarriage {
     public static Pair[][] extractRawData(Object[][] matrix) {
         Pair[][] arrayWithoutTitles = new Pair[matrix.length-1][matrix[0].length-1];
         for (int i = 1; i < matrix.length; i ++) {
-            for (int j = 1; j < matrix[0].length; j++) {
+            for (int j = 1; j < matrix[1].length; j++) {
                 arrayWithoutTitles[i-1][j-1] = (Pair) matrix[i][j];
             }
         }

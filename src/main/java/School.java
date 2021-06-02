@@ -8,10 +8,11 @@ public class School {
     private List<Student> students;
     private Map<Student, Integer> preferences;
     private int actualPreference = 1;
-    private int capacity = 1;
+    private int capacity;
 
-    public School(String name) {
+    public School(String name, int capacity) {
         this.name = name;
+        this.capacity = capacity;
         this.students = new ArrayList<>();
         this.preferences = new HashMap<>();
     }

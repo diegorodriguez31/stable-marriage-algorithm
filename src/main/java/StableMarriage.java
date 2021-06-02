@@ -320,12 +320,6 @@ public class StableMarriage {
 
     // Build schools based on the school names
     private static School[] getSchools(Object[][] choicesMatrix) {
-        /*School[] schools = new School[choicesMatrix[0].length - 1];
-        String[] schoolsName = retrieveSchoolsNames(choicesMatrix);
-        for (int i = 1; i < schoolsName.length; i++) {
-            School school = new School(schoolsName[i], schoolsCapacities.get(schoolsName[i]));
-            schools[i-1] = school;
-        }*/
         School[] schools = new School[schoolsCapacitiesTab.length];
         for (int i = 0; i < schoolsCapacitiesTab.length; i++) {
             School school = new School((String) schoolsCapacitiesTab[i][0], (int) schoolsCapacitiesTab[i][1]);
@@ -394,47 +388,3 @@ public class StableMarriage {
         return true;
     }
 }
-
-
-
-/*
-
-
-    # Lire le fichier csv incomplet et le mettre dans un tableau
-def lecture_csv():
-    n = 100
-    m = 1000
-
-    fichier = './toy_incomplet.csv'
-    donnees = np.zeros((n, m))
-    i = 0
-    with open(fichier, 'rb') as csvfile:
-        spamreader = csv.reader(csvfile, delimiter=' ', quotechar='|')
-        for row in spamreader:
-            for j in range(m):
-                donnees[i, j] = row[j]
-            i += 1
-    return donnees
-
-    public static void buildMatrix(boolean schoolsBidding) {
-        try {
-            Scanner scanner = new Scanner(new File(filePath));
-            scanner.useDelimiter(";");
-            parseFile(scanner, schoolsBidding);
-            scanner.close();
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public static void parseFile(Scanner scanner, boolean schoolsBidding) {
-        String[] schools = {};
-        String[] students = {};
-
-        while (scanner.hasNext()) {
-            System.out.println(scanner.next() + "    ");
-            //Pair pair = new Pair();
-
-        }
-    }
- */

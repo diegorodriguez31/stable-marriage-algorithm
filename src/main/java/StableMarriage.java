@@ -12,9 +12,9 @@ public class StableMarriage {
     public static void main(String[] args) {
         Scanner userScanner = new Scanner(System.in);
         System.out.println("\nWhich file do you want to use ?");
-        System.out.println("1) 3 students and 3 schools");
-        System.out.println("2) 3 students and 4 schools");
-        System.out.println("3) 16 students and 3 schools");
+        System.out.println("1) 3 students and 3 schools - school capacity of 1");
+        System.out.println("2) 3 students and 4 schools - variable schools capacities");
+        System.out.println("3) 16 students and 3 schools - variable schools capacities");
         int fileUsed = userScanner.nextInt();
         filePath = "src/main/resources/preferencesFile" + fileUsed + ".csv";
 
@@ -287,6 +287,8 @@ public class StableMarriage {
 
     private static void displayResult(School[] schools) {
         System.out.println("Number of Rounds : " + nbRounds + "\n");
+        System.out.print("\nSchools : Students\n");
+        System.out.print("____________________\n");
         for (School school : schools) {
             System.out.print("\n" + school.getName() + " : ");
             school.getStudents().forEach(student -> System.out.print(student.getName() + ", "));
@@ -296,6 +298,8 @@ public class StableMarriage {
 
     private static void displayResult(Student[] students) {
         System.out.println("Number of Rounds : " + nbRounds + "\n");
+        System.out.print("\nStudents : Schools\n");
+        System.out.print("____________________\n");
         for (Student student : students) {
             System.out.print("\n" + student.getName() + " : " + student.getSchool().getName());
             System.out.print("\n--------------------------------------");

@@ -21,7 +21,7 @@ public class Student {
         this.school = school;
     }
 
-    public void removeSchool(School school) {this.school = null;}
+    public void removeSchool(School school) {this.school = new School("No School", 10000);}
 
     public Map<School, Integer> getPreferences() {
         return preferences;

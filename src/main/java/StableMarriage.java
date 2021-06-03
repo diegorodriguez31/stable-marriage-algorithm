@@ -226,6 +226,7 @@ public class StableMarriage {
                     } else {
                         student.increaseActualPreference();
                         remainingStudents.add(student);
+                        student.removeSchool(schools[i]);
                         schools[i].removeStudent(student);
                     }
                 }

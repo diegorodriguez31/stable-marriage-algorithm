@@ -5,6 +5,7 @@ import java.util.*;
 public class StableMarriage {
 
     static String filePath;
+    // Variable to count the number of rounds the algorithm do
     static int nbRounds = 0;
     static HashMap<String, Integer> schoolsCapacities;
     static Object[][] schoolsCapacitiesTab;
@@ -25,22 +26,30 @@ public class StableMarriage {
         System.out.println("\n\n\n");
 
         schoolsCapacities = new HashMap<>();
+        // Matrix of the schools and students choices according to the CSV File
         Object[][] choicesMatrix = parseCSVFile(filePath);
-
+        // Get the schools from this matrix
         School[] schools = getSchools(choicesMatrix);
+        // Get the students from this matrix
         Student[] students = getStudents(choicesMatrix);
-
+        // Create a matrix with only the preferences pairs of each school and student
         Pair[][] preferencesPairs = extractRawData(choicesMatrix);
-
+        // Parse this new matrix to assign the values into the school and student objets
         parsePreferencesPairs(schools, students, preferencesPairs);
 
+        // Whether the students or the school do the bidding, we don't use the same method
        if (studentsAreBidding) {
-            applyStudentBidding(students, schools);
+            applyAlgorithmWithStudentsDoingTheBidding(students, schools);
         } else {
-            applySchoolBidding(students, schools);
+            applyAlgorithmWithSchoolsDoingTheBidding(students, schools);
         }
     }
 
+    /**
+     * Parse the given CSV file
+     * @param filePath the CSV file path
+     * @return a matrix of objects containing all the file information
+     */
     private static Object[][] parseCSVFile(String filePath) {
         Object[][] choicesMatrix = {{}};
 
@@ -49,9 +58,11 @@ public class StableMarriage {
 
         List<List<String>> records = new ArrayList<>();
         try {
+            // Read the file
             BufferedReader br = new BufferedReader(new FileReader(filePath));
             String line;
             int i = 0;
+            // Get the students and schools names and capacities
             while ((line = br.readLine()) != null) {
                 if (i == 0) {
                     String[] values = line.split(";");
@@ -75,6 +86,7 @@ public class StableMarriage {
                     records.add(Arrays.asList(values));
                     choicesMatrix[0] = values;
 
+                    // The 4 loops are used to re-size because the capacities shift the matrix
                     List<String> a = new ArrayList<>();
                     for (int k = 1; k < values.length; k = k + 2) {
                         a.add(values[k]);
@@ -94,6 +106,7 @@ public class StableMarriage {
                     }
 
                 } else {
+                    // Fill the choices matrix with the pairs
                     String[] values = line.split(";");
                     records.add(Arrays.asList(values));
                     choicesMatrix[i][0] = values[0];
@@ -114,6 +127,11 @@ public class StableMarriage {
         return choicesMatrix;
     }
 
+    /**
+     * Checks if we can stop the algorithm or not
+     * @param schools the schools that choice among the bidders
+     * @return true if we can stop the algorithm and false if not
+     */
     private static boolean marriageIsStable(School[] schools){
         for (School school : schools) {
             if (!school.checkCapacity()) {
@@ -123,6 +141,11 @@ public class StableMarriage {
         return true;
     }
 
+    /**
+     * Checks if we can stop the algorithm or not
+     * @param students the students that choice among the bidders
+     * @return true if we can stop the algorithm and false if not
+     */
     private static boolean marriageIsStable(Student[] students){
         for (Student student : students) {
             if (!student.checkCapacity()) {
@@ -132,40 +155,66 @@ public class StableMarriage {
         return true;
     }
 
-    private static void applyStudentBidding(Student[] students, School[] schools) {
+    /**
+     * Applies the students bidding. Each free student choose the school he wants to have
+     * according to his actual preference
+     * @param students the students
+     * @param schools the schools
+     */
+    private static void applyAlgorithmWithStudentsDoingTheBidding(Student[] students, School[] schools) {
+        // Applies the students bidding
         studentsBiddingSchools(students);
         nbRounds = 1;
         while (!marriageIsStable(schools)) {
+            // Select the wanted students and return a list of free students
             List<Student> studentsRemaining = selectTheWantedSudents(schools);
             Student[] remainingStudents = new Student[students.length];
             int j = 0;
+            // Use the list to fill the remaining students
             for (Student student : studentsRemaining) {
                 remainingStudents[j] = student;
                 j++;
             }
+            // Applies the students bidding
             studentsBiddingSchools(remainingStudents);
             nbRounds++;
         }
+        // Display the algorithm result
         displayResult(students);
     }
 
-    private static void applySchoolBidding(Student[] students, School[] schools) {
+    /**
+     * Applies the schools bidding. Each free school choose the student she wants to have
+     * according to her actual preference
+     * @param students the students
+     * @param schools the schools
+     */
+    private static void applyAlgorithmWithSchoolsDoingTheBidding(Student[] students, School[] schools) {
+        // Applies the schools bidding
         schoolsBiddingStudents(schools);
         nbRounds = 1;
         while (!marriageIsStable(students)) {
+            // Select the wanted schools and return a list of free schools
             List<School> schoolsRemaining = selectTheWantedSchool(students);
             School[] remainingSchools = new School[schools.length];
             int j = 0;
+            // Use the list to fill the remaining schools
             for (School school : schoolsRemaining) {
                 remainingSchools[j] = school;
                 j++;
             }
+            // Applies the schools bidding
             schoolsBiddingStudents(remainingSchools);
             nbRounds++;
         }
+        // Display the algorithm result
         displayResult(schools);
     }
 
+    /**
+     * Each free student chooses the school he wants to have according to his actual preference
+     * @param students the students
+     */
     private static void studentsBiddingSchools(Student[] students) {
         for (int i = 0; i < students.length; i++) {
             if (students[i] != null) {
@@ -181,6 +230,10 @@ public class StableMarriage {
         }
     }
 
+    /**
+     * Each free school chooses the student she wants to have according to her actual preference
+     * @param schools the schools
+     */
     private static void schoolsBiddingStudents(School[] schools) {
         for (int i = 0; i < schools.length; i++) {
             if (schools[i] != null) {
@@ -196,6 +249,11 @@ public class StableMarriage {
         }
     }
 
+    /**
+     * The schools choose the students they want to keep according to their preferences and capacity
+     * @param schools the schools
+     * @return a student list representing the free students that have been ejected
+     */
     private static List<Student> selectTheWantedSudents(School[] schools) {
         List<Student> remainingStudents = new ArrayList<>();
         for (int i = 0; i < schools.length; i++) {
@@ -205,10 +263,11 @@ public class StableMarriage {
                 List<Integer> preferencesOrder = new ArrayList<>(schoolPreferences.values());
                 Collections.sort(preferencesOrder);
 
+                // Sort the map with the preferences order
                 Map<Student, Integer> map = sortByValue(schoolPreferences);
 
                 List<Student> tmpList = new ArrayList<>();
-                // Trier la liste pour meme ordre que la map
+                // Sort the list. This list needs to have the same order as the map
                 for (Map.Entry mapEntry : map.entrySet()) {
                     Student tmpStudent = (Student) mapEntry.getKey();
                     for (Student student : schools[i].getStudents()) {
@@ -219,6 +278,7 @@ public class StableMarriage {
                     }
                 }
 
+                // Remove the students that can't be accepted
                 int actualCapacity = 1;
                 for (Student student : tmpList) {
                     if (actualCapacity <= schools[i].getCapacity()) {
@@ -235,6 +295,11 @@ public class StableMarriage {
         return remainingStudents;
     }
 
+    /**
+     * The students choose the schools they want to keep according to their preferences and capacity
+     * @param students the students
+     * @return a school list representing the free schools that have been ejected
+     */
     private static List<School> selectTheWantedSchool(Student[] students) {
         List<School> remainingSchools = new ArrayList<>();
         for (int i = 0; i < students.length; i++) {
@@ -244,10 +309,11 @@ public class StableMarriage {
                 List<Integer> preferencesOrder = new ArrayList<>(studentPreferences.values());
                 Collections.sort(preferencesOrder);
 
+                // Sort the map with the preferences order
                 Map<School, Integer> map = sortByValue(studentPreferences);
 
                 List<School> tmpList = new ArrayList<>();
-                // Trier la liste pour meme ordre que la map
+                // Sort the list. This list needs to have the same order as the map
                 for (Map.Entry mapEntry : map.entrySet()) {
                     School tmpSchool = (School) mapEntry.getKey();
                     for (School school : students[i].getInterestedSchools()) {
@@ -258,6 +324,7 @@ public class StableMarriage {
                     }
                 }
 
+                // Remove the students that can't be accepted
                 int actualCapacity = 1;
                 for (School school : tmpList) {
                     if (actualCapacity <= 1) {
@@ -274,6 +341,13 @@ public class StableMarriage {
         return remainingSchools;
     }
 
+    /**
+     * Sort the given map in an ascending order according to the map values
+     * @param map the given map
+     * @param <K> the key
+     * @param <V> the value
+     * @return a new sorted map
+     */
     public static <K, V extends Comparable<? super V>> Map<K, V> sortByValue(Map<K, V> map) {
         List<Map.Entry<K, V>> list = new ArrayList<>(map.entrySet());
         list.sort(Map.Entry.comparingByValue());
@@ -286,6 +360,10 @@ public class StableMarriage {
         return result;
     }
 
+    /**
+     * Display the algorithm result
+     * @param schools the schools that made the bidding
+     */
     private static void displayResult(School[] schools) {
         System.out.println("Number of Rounds : " + nbRounds + "\n");
         System.out.print("\nSchools : Students\n");
@@ -297,6 +375,10 @@ public class StableMarriage {
         }
     }
 
+    /**
+     * Display the algorithm result
+     * @param students the students that made the bidding
+     */
     private static void displayResult(Student[] students) {
         System.out.println("Number of Rounds : " + nbRounds + "\n");
         System.out.print("\nStudents : Schools\n");
@@ -307,7 +389,12 @@ public class StableMarriage {
         }
     }
 
-    // Parse the raw pair matrix and associate the schools and students preferences
+    /**
+     * Parses the raw pair matrix and associate the schools and students preferences
+     * @param schools the schools
+     * @param students the students
+     * @param preferencesPairs all the preferences pairs from the matrix
+     */
     private static void parsePreferencesPairs(School[] schools, Student[] students, Pair[][] preferencesPairs) {
         for (int i = 0; i < students.length; i++) {
             for (int j = 0; j < schools.length; j++) {
@@ -319,7 +406,11 @@ public class StableMarriage {
         }
     }
 
-    // Build schools based on the school names
+    /**
+     * Builds schools based on the schools names
+     * @param choicesMatrix the object matrix from the source file
+     * @return a schools array
+     */
     private static School[] getSchools(Object[][] choicesMatrix) {
         School[] schools = new School[schoolsCapacitiesTab.length];
         for (int i = 0; i < schoolsCapacitiesTab.length; i++) {
@@ -329,7 +420,11 @@ public class StableMarriage {
         return schools;
     }
 
-    // Build students based on the students names
+    /**
+     * Builds students based on the students names
+     * @param choicesMatrix the object matrix from the source file
+     * @return a students array
+     */
     private static Student[] getStudents(Object[][] choicesMatrix) {
         Student[] students = new Student[choicesMatrix.length - 1];
         String[] studentsName = retrieveStudentsNames(choicesMatrix);
@@ -340,7 +435,11 @@ public class StableMarriage {
         return students;
     }
 
-    // Retrieve the schools names from the matrix
+    /**
+     * Retrieves the schools names from the matrix
+     * @param matrix the given matrix from the source file
+     * @return a schools names array
+     */
     public static String[] retrieveSchoolsNames(Object[][] matrix) {
         String[] line = new String[matrix[0].length];
         for (int i = 0; i < line.length; i ++) {
@@ -349,8 +448,11 @@ public class StableMarriage {
         return line;
     }
 
-    // Retrieve the students names from the matrix
-    public static String[] retrieveStudentsNames(Object[][] matrix) {
+    /**
+     * Retrieves the students names from the matrix
+     * @param matrix the given matrix from the source file
+     * @return a students names array
+     */    public static String[] retrieveStudentsNames(Object[][] matrix) {
         String[] column = new String[matrix.length];
         for (int i = 0; i < column.length; i ++) {
             column[i] = matrix[i][0].toString();
@@ -358,7 +460,11 @@ public class StableMarriage {
         return column;
     }
 
-    // Extract a Pair array without the school and students names
+    /**
+     * Extracts a pair array without the school and students names
+     * @param matrix the given matrix from the source file
+     * @return a new matrix without the schools and students names and capacities
+     */
     public static Pair[][] extractRawData(Object[][] matrix) {
         Pair[][] arrayWithoutTitles = new Pair[matrix.length-1][matrix[0].length-1];
         for (int i = 1; i < matrix.length; i ++) {
@@ -367,25 +473,5 @@ public class StableMarriage {
             }
         }
         return arrayWithoutTitles;
-    }
-
-
-    // Methode de test (a voir si on l'utilise comme ça)
-    // Checks if the school prefer the first (current engagment) over the second
-    public static boolean whichPrefers(School school, Student first, Student second) {
-        // If first comes before m in list of w, then w prefers her fcurrent engagement
-        for (Student student :
-                school.getStudents()) {
-            Map<Student, Integer> preferences = school.getPreferences();
-            if (preferences.containsKey(first)) {
-                if (preferences.containsKey(second)) {
-                    return preferences.get(first) < preferences.get(second);
-                }
-                return true;
-            } else {
-                return preferences.containsKey(second);
-            }
-        }
-        return true;
     }
 }

@@ -1,5 +1,7 @@
 import java.io.BufferedReader;
 import java.io.FileReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.*;
 
 public class StableMarriage {
@@ -18,7 +20,7 @@ public class StableMarriage {
         System.out.println("3) 16 students and 3 schools - variable schools capacities - as much students as total capacity");
         System.out.println("4) 16 students and 3 schools - variable schools capacities - more students than total capacity");
         int fileUsed = userScanner.nextInt();
-        filePath = "src/main/resources/preferencesFile" + fileUsed + ".csv";
+        filePath = "preferencesFile" + fileUsed + ".csv";
 
         System.out.println("\nWho does the bidding ?");
         System.out.println("1) Students");
@@ -60,7 +62,8 @@ public class StableMarriage {
         List<List<String>> records = new ArrayList<>();
         try {
             // Read the file
-            BufferedReader br = new BufferedReader(new FileReader(filePath));
+            InputStream in = StableMarriage.class.getResourceAsStream(filePath);
+            BufferedReader br = new BufferedReader(new InputStreamReader(in));
             String line;
             int i = 0;
             // Get the students and schools names and capacities
@@ -80,7 +83,8 @@ public class StableMarriage {
             choicesMatrix = new Object[nbRows][nbColumns];
 
             i = 0;
-            BufferedReader br2 = new BufferedReader(new FileReader(filePath));
+            InputStream in2 = StableMarriage.class.getResourceAsStream(filePath);
+            BufferedReader br2 = new BufferedReader(new InputStreamReader(in2));
             while ((line = br2.readLine()) != null) {
                 if (i == 0) {
                     String[] values = line.split(";");

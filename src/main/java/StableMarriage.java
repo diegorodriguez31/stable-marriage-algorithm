@@ -15,7 +15,8 @@ public class StableMarriage {
         System.out.println("\nWhich file do you want to use ?");
         System.out.println("1) 3 students and 3 schools - school capacity of 1");
         System.out.println("2) 3 students and 4 schools - variable schools capacities");
-        System.out.println("3) 16 students and 3 schools - variable schools capacities");
+        System.out.println("3) 16 students and 3 schools - variable schools capacities - as much students as total capacity");
+        System.out.println("4) 16 students and 3 schools - variable schools capacities - more students than total capacity");
         int fileUsed = userScanner.nextInt();
         filePath = "src/main/resources/preferencesFile" + fileUsed + ".csv";
 
